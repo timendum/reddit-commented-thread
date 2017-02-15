@@ -1,6 +1,6 @@
 /* global snoowrap, google */
 var REDDIT_APP_ID = 'R7NdC-SvRV45Uw';
-var REDIRECT_URI = 'https://timendum.github.io/reddit-commented-thread/index.html';
+var REDIRECT_URI = 'https://timendum.github.io/reddit-commented-thread/';
 var REQUIRED_SCOPES = ['read', 'identity'];
 var USER_AGENT = 'reddit most commented thread by /u/timendum';
 var GET_LIMIT = 200;
