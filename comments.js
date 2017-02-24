@@ -88,10 +88,10 @@ function createChart(url) {
     var accessToken = getAccessToken();
     var button = document.getElementById('submit');
     if (accessToken) {
+        button.setAttribute('disabled', 'disabled');
         accessToken.then(function (token) {
             return getReddit(token);
         }).then(function (reddit) {
-            button.setAttribute('disabled', 'disabled');
             return reddit._getListing({uri: url + '/comments', qs: {limit: GET_LIMIT}});
         }).then(
             plot,
