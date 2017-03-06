@@ -46,7 +46,7 @@ function selectHandler(chart, data) {
     };
 }
 
-function plot(comments) {
+function createPlotDataTimeDependant(comments) {
     var chartData = [[
         'Thread',
         'Comments',
@@ -73,7 +73,12 @@ function plot(comments) {
             ]);
         }
     }
+    return chartData;
+}
+
+function plot(comments) {
     google.charts.setOnLoadCallback(function () {
+        var chartData = createPlotDataTimeDependant(comments);
         var data = google.visualization.arrayToDataTable(chartData);
         data.sort({column: 1, desc: true});
         var options = {'pieHole': 0.4,
