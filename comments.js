@@ -49,9 +49,10 @@ function selectHandler(chart, data) {
 function createPlotDataTimeDependant(comments) {
     var chartData = [[
         'Thread',
-        'Comments',
+        'Score',
         'Link Id',
-        'Subreddit']];
+        'Subreddit',
+        'Comments']];
     var now = (new Date()).getTime() / 1000;
     for (var comment of comments) {
         var updated = false;
@@ -60,6 +61,7 @@ function createPlotDataTimeDependant(comments) {
         for (var cd of chartData) {
             if (cd[2] === comment.link_id) {
                 cd[1] += value;
+                cd[4] += 1;
                 updated = true;
                 break;
             }
@@ -69,7 +71,8 @@ function createPlotDataTimeDependant(comments) {
                 comment.link_title,
                 value,
                 comment.link_id,
-                comment.subreddit.display_name
+                comment.subreddit.display_name,
+                1
             ]);
         }
     }
