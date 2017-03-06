@@ -102,15 +102,16 @@ function createChart(url) {
         }).then(function (reddit) {
             return reddit._getListing({uri: url + '/comments', qs: {limit: GET_LIMIT}});
         }).then(
-            plot,
-            function (e) {
-                console.log(e);
-                setError('Error reading data from Reddit.');
-                sessionStorage.removeItem('accessToken');
-                sessionStorage.removeItem('accessTokenDate');
-                return null;
-            }
-        ).catch(console.log)
+            plot
+        ).catch(function (e) {
+            console.log(e);
+            setError('Error reading data from Reddit.');
+            sessionStorage.removeItem('accessToken');
+            sessionStorage.removeItem('accessTokenDate');
+            /* eslint-disable no-native-reassign */
+            location = getAuthRedirect();
+            return null;
+        })
          .then(function () {
              button.removeAttribute('disabled');
          });
