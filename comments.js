@@ -52,11 +52,11 @@ function createPlotDataTimeDependant(comments) {
         'Comments',
         'Link Id',
         'Subreddit']];
-	var now = (new Date()).getTime() / 1000;
+    var now = (new Date()).getTime() / 1000;
     for (var comment of comments) {
         var updated = false;
-		var deltaTime = (now - comment.created_utc) / 60 / 60;
-		var value = 1 / (Math.pow(deltaTime, 2) / 5 + 1);
+        var deltaTime = (now - comment.created_utc) / 60 / 60;
+        var value = 1 / (Math.pow(deltaTime, 2) / 5 + 1);
         for (var cd of chartData) {
             if (cd[2] === comment.link_id) {
                 cd[1] += value;
@@ -82,10 +82,10 @@ function plot(comments) {
         var data = google.visualization.arrayToDataTable(chartData);
         data.sort({column: 1, desc: true});
         var options = {'pieHole': 0.4,
-                       'sliceVisibilityThreshold': 0.02,
-                       'width': 900,
-                       'height': 500,
-                       'legend': 'none'};
+            'sliceVisibilityThreshold': 0.02,
+            'width': 900,
+            'height': 500,
+            'legend': 'none'};
         var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
         chart.draw(data, options);
         google.visualization.events.addListener(chart, 'select', selectHandler(chart, data));
@@ -112,8 +112,8 @@ function createChart(url) {
             }
         ).catch(console.log)
          .then(function () {
-            button.removeAttribute('disabled');
-        });
+             button.removeAttribute('disabled');
+         });
     } else {
         /* eslint-disable no-native-reassign */
         location = getAuthRedirect();
