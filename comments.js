@@ -52,11 +52,14 @@ function plot(comments) {
         'Comments',
         'Link Id',
         'Subreddit']];
+	var now = (new Date()).getTime() / 1000;
     for (var comment of comments) {
         var updated = false;
+		var deltaTime = (now - comment.created_utc) / 60 / 60;
+		var value = 1 / (Math.pow(deltaTime, 2) / 5 + 1);
         for (var cd of chartData) {
             if (cd[2] === comment.link_id) {
-                cd[1] += 1;
+                cd[1] += value;
                 updated = true;
                 break;
             }
@@ -64,7 +67,7 @@ function plot(comments) {
         if (!updated) {
             chartData.push([
                 comment.link_title,
-                1,
+                value,
                 comment.link_id,
                 comment.subreddit.display_name
             ]);
