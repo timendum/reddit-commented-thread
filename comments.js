@@ -81,17 +81,22 @@ function createPlotDataTimeDependant(comments) {
 
 function plot(comments) {
     google.charts.setOnLoadCallback(function () {
-        var chartData = createPlotDataTimeDependant(comments);
-        var data = google.visualization.arrayToDataTable(chartData);
-        data.sort({column: 1, desc: true});
-        var options = {'pieHole': 0.4,
-            'sliceVisibilityThreshold': 0.02,
-            'width': 900,
-            'height': 500,
-            'legend': 'none'};
-        var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
-        chart.draw(data, options);
-        google.visualization.events.addListener(chart, 'select', selectHandler(chart, data));
+        try {
+            var chartData = createPlotDataTimeDependant(comments);
+            var data = google.visualization.arrayToDataTable(chartData);
+            data.sort({column: 1, desc: true});
+            var options = {'pieHole': 0.4,
+                'sliceVisibilityThreshold': 0.02,
+                'width': 900,
+                'height': 500,
+                'legend': 'none'};
+            var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+            chart.draw(data, options);
+            google.visualization.events.addListener(chart, 'select', selectHandler(chart, data));
+        } catch (e) {
+            console.log(e);
+            setError('Error during the creation of the chart');
+        }
     });
 }
 
@@ -114,10 +119,9 @@ function createChart(url) {
             /* eslint-disable no-native-reassign */
             location = getAuthRedirect();
             return null;
-        })
-         .then(function () {
-             button.removeAttribute('disabled');
-         });
+        }).then(function () {
+            button.removeAttribute('disabled');
+        });
     } else {
         /* eslint-disable no-native-reassign */
         location = getAuthRedirect();
