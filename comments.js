@@ -103,6 +103,7 @@ function plot(comments) {
 function createChart(url) {
     var accessToken = getAccessToken();
     var button = document.getElementById('submit');
+        button.textContent = button.dataset.loadingText;
     if (accessToken) {
         button.setAttribute('disabled', 'disabled');
         accessToken.then(function (token) {
@@ -121,6 +122,7 @@ function createChart(url) {
             return null;
         }).then(function () {
             button.removeAttribute('disabled');
+            button.textContent = button.dataset.originalText;
         });
     } else {
         /* eslint-disable no-native-reassign */
