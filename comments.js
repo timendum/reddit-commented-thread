@@ -88,8 +88,9 @@ function plotPie(comments) {
             data.sort({column: 1, desc: true});
             var options = {'pieHole': 0.4,
                 'sliceVisibilityThreshold': 0.02,
-                'width': 900,
-                'height': 500,
+                'chartArea': {'width': '90%', 'height': '90%'},
+                'width': 400,
+                'height': 400,
                 'legend': 'none'};
             var chart = new google.visualization.PieChart(document.getElementById('pie_div'));
             chart.draw(data, options);
@@ -145,8 +146,9 @@ function plotPoints(threads) {
 
         var options = {
             'colors': ['#3366cc'],
-            'width': 900,
-            'height': 500,
+            'chartArea': {'width': '90%', 'height': '90%'},
+            'width': 500,
+            'height': 300,
             'legend': 'none'};
         var chart = new google.visualization.ScatterChart(document.getElementById('points_div'));
         chart.draw(data, options);
