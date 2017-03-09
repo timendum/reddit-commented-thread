@@ -3,7 +3,8 @@ var REDDIT_APP_ID = 'R7NdC-SvRV45Uw';
 var REDIRECT_URI = 'https://timendum.github.io/reddit-commented-thread/';
 var REQUIRED_SCOPES = ['read', 'identity'];
 var USER_AGENT = 'reddit most commented thread by /u/timendum';
-var GET_LIMIT = 200;
+var GET_PIE_LIMIT = 200;
+var GET_POINTS_LIMIT = 100;
 
 var cachedReddit = null;
 
@@ -35,7 +36,7 @@ function parseUrl(url) {
     throw new TypeError('Invalid URL. Please enter the URL of a subreddit or a multireddit.');
 }
 
-function selectHandler(chart, data) {
+function selectPieHandler(chart, data) {
     return function (a) {
         var selection = chart.getSelection();
         chart.setSelection(null);
@@ -46,7 +47,7 @@ function selectHandler(chart, data) {
     };
 }
 
-function createPlotDataTimeDependant(comments) {
+function createPieDataTimeDependant(comments) {
     var chartData = [[
         'Thread',
         'Score',
@@ -79,10 +80,10 @@ function createPlotDataTimeDependant(comments) {
     return chartData;
 }
 
-function plot(comments) {
+function plotPie(comments) {
     google.charts.setOnLoadCallback(function () {
         try {
-            var chartData = createPlotDataTimeDependant(comments);
+            var chartData = createPieDataTimeDependant(comments);
             var data = google.visualization.arrayToDataTable(chartData);
             data.sort({column: 1, desc: true});
             var options = {'pieHole': 0.4,
@@ -90,28 +91,81 @@ function plot(comments) {
                 'width': 900,
                 'height': 500,
                 'legend': 'none'};
-            var chart = new google.visualization.PieChart(document.getElementById('chart_div'));
+            var chart = new google.visualization.PieChart(document.getElementById('pie_div'));
             chart.draw(data, options);
-            google.visualization.events.addListener(chart, 'select', selectHandler(chart, data));
+            google.visualization.events.addListener(chart, 'select', selectPieHandler(chart, data));
         } catch (e) {
             console.log(e);
-            setError('Error during the creation of the chart');
+            setError('Error during the creation of the pie chart');
         }
+    });
+}
+
+function selectHandler(chart, threads) {
+    return function (a) {
+        var selection = chart.getSelection();
+        chart.setSelection(null);
+        let thread = threads[selection[0].row];
+        let permalink = thread.permalink;
+        let id = thread.id;
+        var url = `https://www.reddit.com${permalink}`;
+        window.open(url, id);
+    };
+}
+
+function createPointsData(threads) {
+    let chartData = [[
+        'Score',
+        'Comments',
+        {'type': 'string', 'role': 'tooltip'},
+        {'type': 'string', 'role': 'style'}
+    ]];
+    let now = (new Date()).getTime() / 1000;
+    for (let thread of threads) {
+        let deltaTime = (now - thread.created_utc) / 60 / 60;
+        let value = 1 / (Math.pow(deltaTime, 2) / 500 + 1);
+        let color = [51, 102, 204].map(function (obj) {
+            return Math.round(obj + (255 - obj) * (1 - value)).toString(16);
+        }).join('');
+        chartData.push([
+            thread.score,
+            thread.num_comments,
+            `${thread.title}\n (Score: ${thread.score} - Comments: ${thread.num_comments})`,
+            `point {fill-color: #${color}}`
+        ]);
+    }
+    return chartData;
+}
+
+function plotPoints(threads) {
+    threads.reverse();
+    google.charts.setOnLoadCallback(function () {
+        var chartData = createPointsData(threads);
+        var data = google.visualization.arrayToDataTable(chartData);
+
+        var options = {
+            'colors': ['#3366cc'],
+            'width': 900,
+            'height': 500,
+            'legend': 'none'};
+        var chart = new google.visualization.ScatterChart(document.getElementById('points_div'));
+        chart.draw(data, options);
+        google.visualization.events.addListener(chart, 'select', selectHandler(chart, threads));
     });
 }
 
 function createChart(url) {
     var accessToken = getAccessToken();
     var button = document.getElementById('submit');
-        button.textContent = button.dataset.loadingText;
+    button.textContent = button.dataset.loadingText;
     if (accessToken) {
         button.setAttribute('disabled', 'disabled');
         accessToken.then(function (token) {
             return getReddit(token);
         }).then(function (reddit) {
-            return reddit._getListing({uri: url + '/comments', qs: {limit: GET_LIMIT}});
+            return reddit._getListing({uri: url + '/comments', qs: {limit: GET_PIE_LIMIT}});
         }).then(
-            plot
+            plotPie
         ).catch(function (e) {
             console.log(e);
             setError('Error reading data from Reddit.');
@@ -121,6 +175,21 @@ function createChart(url) {
             location = getAuthRedirect();
             return null;
         }).then(function () {
+            // get cached istance
+            return getReddit(null);
+        }).then(function (reddit) {
+            return reddit._getListing({uri: url + '/new', qs: {limit: GET_POINTS_LIMIT}});
+        }).catch(function (e) {
+            console.log(e);
+            setError('Error reading data from Reddit.');
+            sessionStorage.removeItem('accessToken');
+            sessionStorage.removeItem('accessTokenDate');
+            /* eslint-disable no-native-reassign */
+            location = getAuthRedirect();
+            return null;
+        }).then(
+            plotPoints
+        ).catch(console.log).then(function () {
             button.removeAttribute('disabled');
             button.textContent = button.dataset.originalText;
         });
