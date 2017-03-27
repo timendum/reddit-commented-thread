@@ -25,14 +25,28 @@
         <div class="alert alert-warning hidden" id="url-error-message"></div>
     </div>
     <div class="container">
-        <div class="row">
-            <div class="col-md-9">
-                <input type="text" class="form-control" id="reddit-url" placeholder="https://www.reddit.com/...">
+        <form class="form-horizontal">
+            <div class="form-group">
+                <div class="col-md-9">
+                    <input type="text" class="form-control" id="reddit-url" placeholder="https://www.reddit.com/...">
+                </div>
+                <div class="col-md-3">
+                    <button class="btn btn-primary" type="button" id="submit" data-original-text="Submit" data-loading-text="Loading...">Submit</button>
+                </div>
             </div>
-            <div class="col-md-3">
-                <button class="btn btn-primary" type="button" id="submit" data-original-text="Submit" data-loading-text="Loading...">Submit</button>
+            <div class="form-group">
+                <div class="col-md-5 form-inline">
+                    <label for="pieComments" class="control-label">Comments for pie chart</label>
+                    <input type="number" class="form-control" id="pieComments" value="200" min="100" step="100">
+                </div>
+                <div class="col-md-5 form-inline">
+                    <label for="scatterSubmissions" class="control-label">Submissions for scatter chart</label>
+                    <input type="number" class="form-control" id="scatterSubmissions" value="100" min="100" step="100">
+                </div>
+                <div class="col-md-2">
+                </div>
             </div>
-        </div>
+        </form>
     </div>
     <div class="container" style="margin-top: 20px;">
         <div class="row">

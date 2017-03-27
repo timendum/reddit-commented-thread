@@ -3,8 +3,6 @@ var REDDIT_APP_ID = 'R7NdC-SvRV45Uw';
 var REDIRECT_URI = 'https://timendum.github.io/reddit-commented-thread/';
 var REQUIRED_SCOPES = ['read', 'identity'];
 var USER_AGENT = 'reddit most commented thread by /u/timendum';
-var GET_PIE_LIMIT = 200;
-var GET_POINTS_LIMIT = 100;
 
 var cachedReddit = null;
 
@@ -159,13 +157,15 @@ function plotPoints(threads) {
 function createChart(url) {
     var accessToken = getAccessToken();
     var button = document.getElementById('submit');
+    var pieLimit = document.getElementById('pieComments').value;
+    var scatterLimit = document.getElementById('scatterSubmissions').value;
     button.textContent = button.dataset.loadingText;
     if (accessToken) {
         button.setAttribute('disabled', 'disabled');
         accessToken.then(function (token) {
             return getReddit(token);
         }).then(function (reddit) {
-            return reddit._getListing({uri: url + '/comments', qs: {limit: GET_PIE_LIMIT}});
+            return reddit._getListing({uri: url + '/comments', qs: {limit: pieLimit}});
         }).then(
             plotPie
         ).catch(function (e) {
@@ -180,7 +180,7 @@ function createChart(url) {
             // get cached istance
             return getReddit(null);
         }).then(function (reddit) {
-            return reddit._getListing({uri: url + '/new', qs: {limit: GET_POINTS_LIMIT}});
+            return reddit._getListing({uri: url + '/new', qs: {limit: scatterLimit}});
         }).catch(function (e) {
             console.log(e);
             setError('Error reading data from Reddit.');
