@@ -157,8 +157,8 @@ function plotPoints(threads) {
 function createChart(url) {
     var accessToken = getAccessToken();
     var button = document.getElementById('submit');
-    var pieLimit = document.getElementById('pieComments').value;
-    var scatterLimit = document.getElementById('scatterSubmissions').value;
+    var pieLimit = parseInt(document.getElementById('pieComments').value, 10);
+    var scatterLimit = parseInt(document.getElementById('scatterSubmissions').value, 10);
     button.textContent = button.dataset.loadingText;
     if (accessToken) {
         button.setAttribute('disabled', 'disabled');
