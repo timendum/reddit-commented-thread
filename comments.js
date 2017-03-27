@@ -124,7 +124,7 @@ function createPointsData(threads) {
         let deltaTime = (now - thread.created_utc) / 60 / 60;
         let value = 1 / (Math.pow(deltaTime, 2) / 200 + 1);
         let color = [51, 102, 204].map(function (obj) {
-            return Math.round(obj + (255 - obj) * (1 - value)).toString(16);
+            return Math.round(obj + (255 - obj) * (0.9 - value)).toString(16);
         }).join('');
         chartData.push([
             thread.score,
