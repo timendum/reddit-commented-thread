@@ -112,7 +112,7 @@ function selectHandler(chart, threads) {
     };
 }
 
-function createPointsData(threads) {
+function createPointsData(threads, maxValues) {
     let chartData = [[
         'Score',
         'Comments',
@@ -127,8 +127,8 @@ function createPointsData(threads) {
             return Math.round(obj + (255 - obj) * (0.9 - value)).toString(16);
         }).join('');
         chartData.push([
-            thread.score,
-            thread.num_comments,
+            Math.min(thread.score, maxValues[0]),
+            Math.min(thread.num_comments, maxValues[1]),
             `${thread.title}\n (Score: ${thread.score} - Comments: ${thread.num_comments})`,
             `point {fill-color: #${color}}`
         ]);
@@ -138,8 +138,12 @@ function createPointsData(threads) {
 
 function plotPoints(threads) {
     threads.reverse();
+    var maxX = document.getElementById('scatterMaxX').value;
+    maxX = parseInt(maxX, 10) || Infinity;
+    var maxy = document.getElementById('scatterMaxY').value;
+    maxy = parseInt(maxy, 10) || Infinity;
     google.charts.setOnLoadCallback(function () {
-        var chartData = createPointsData(threads);
+        var chartData = createPointsData(threads, [maxX, maxy]);
         var data = google.visualization.arrayToDataTable(chartData);
 
         var options = {
@@ -264,6 +268,13 @@ function getAccessToken() {
     return null;
 }
 
+function onAdvancedClicked() {
+    var hidden = !this.checked;
+    for (let elem of document.getElementsByClassName('form-advanced')) {
+        elem.hidden = hidden;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
     var authState = new URL(window.location.href).searchParams.get('state');
     if (authState) {
@@ -275,4 +286,5 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     google.charts.load('current', {'packages': ['corechart']});
     document.getElementById('submit').addEventListener('click', onSubmitClicked);
+    document.getElementById('advanced-form').addEventListener('click', onAdvancedClicked);
 });
