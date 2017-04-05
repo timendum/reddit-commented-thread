@@ -139,16 +139,18 @@ function createPointsData(threads, maxValues) {
 function plotPoints(threads) {
     threads.reverse();
     var maxX = document.getElementById('scatterMaxX').value;
-    maxX = parseInt(maxX, 10) || Infinity;
-    var maxy = document.getElementById('scatterMaxY').value;
-    maxy = parseInt(maxy, 10) || Infinity;
+    maxX = parseInt(maxX, 10);
+    var maxY = document.getElementById('scatterMaxY').value;
+    maxY = parseInt(maxY, 10);
     google.charts.setOnLoadCallback(function () {
-        var chartData = createPointsData(threads, [maxX, maxy]);
+        var chartData = createPointsData(threads, [maxX || Infinity, maxY || Infinity]);
         var data = google.visualization.arrayToDataTable(chartData);
 
         var options = {
             'colors': ['#3366cc'],
             'chartArea': {'width': '90%', 'height': '90%'},
+            'hAxis': {'minValue': 0, 'maxValue': maxX},
+            'vAxis': {'minValue': 0, 'maxValue': maxY},
             'width': 500,
             'height': 300,
             'legend': 'none'};
