@@ -3,6 +3,7 @@ var REDDIT_APP_ID = 'R7NdC-SvRV45Uw';
 var REDIRECT_URI = 'https://timendum.github.io/reddit-commented-thread/';
 var REQUIRED_SCOPES = ['read', 'identity'];
 var USER_AGENT = 'reddit most commented thread by /u/timendum';
+var FORM_CONFIGS = ['reddit-url', 'pieComments', 'scatterSubmissions', 'scatterMaxX'];
 
 var cachedReddit = null;
 
@@ -227,6 +228,7 @@ function onSubmitClicked() {
         throw err;
     }
     setError(null);
+    saveForm();
     createChart(parsedUrl);
 }
 
@@ -277,7 +279,30 @@ function onAdvancedClicked() {
     }
 }
 
+function saveForm() {
+    var config = {};
+    for (let id of FORM_CONFIGS) {
+        let value = document.getElementById(id).value;
+        config[id] = value;
+    }
+    sessionStorage.formConfig = JSON.stringify(config);
+}
+
+function restoreForm() {
+    if (!sessionStorage.formConfig) {
+        return;
+    }
+    var config = JSON.parse(sessionStorage.formConfig);
+    for (let id of FORM_CONFIGS) {
+        let value = config[id];
+        if (value !== undefined) {
+            document.getElementById(id).value = value;
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function () {
+    restoreForm();
     var authState = new URL(window.location.href).searchParams.get('state');
     if (authState) {
         document.getElementById('reddit-url').value = authState;
@@ -288,5 +313,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     google.charts.load('current', {'packages': ['corechart']});
     document.getElementById('submit').addEventListener('click', onSubmitClicked);
-    document.getElementById('advanced-form').addEventListener('click', onAdvancedClicked);
+    document.getElementById('advanced-form').addEventListener('change', onAdvancedClicked);
+    document.getElementById('advanced-form').checked = false;
 });
