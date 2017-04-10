@@ -3,7 +3,9 @@ var REDDIT_APP_ID = 'R7NdC-SvRV45Uw';
 var REDIRECT_URI = 'https://timendum.github.io/reddit-commented-thread/';
 var REQUIRED_SCOPES = ['read', 'identity'];
 var USER_AGENT = 'reddit most commented thread by /u/timendum';
-var FORM_CONFIGS = ['reddit-url', 'pieComments', 'scatterSubmissions', 'scatterMaxX'];
+var FORM_CONFIGS = [
+    'reddit-url', 'pieComments', 'scatterSubmissions', 'scatterMaxX', 'scatterMaxY'
+];
 
 var cachedReddit = null;
 
