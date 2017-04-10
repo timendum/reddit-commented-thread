@@ -150,8 +150,6 @@ function plotPoints(threads) {
         var options = {
             'colors': ['#3366cc'],
             'chartArea': {'width': '90%', 'height': '90%'},
-            'hAxis': {'minValue': 0, 'maxValue': maxX},
-            'vAxis': {'minValue': 0, 'maxValue': maxY},
             'width': 500,
             'height': 300,
             'legend': 'none'};
