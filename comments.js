@@ -237,23 +237,21 @@ function getReddit(accessToken) {
     return cachedReddit;
 }
 
-function onSubmit() {
-    try {
-        var url = document.getElementById('reddit-url').value;
-        var parsedUrl;
-        try {
-            parsedUrl = parseUrl(url);
-        } catch (err) {
-            setError(err.message);
-            throw err;
-        }
-        setError(null);
-        saveForm();
-        createChart(parsedUrl);
-    } catch (e) {
-        // pass
+function onSubmit(evt) {
+    if (evt) {
+        evt.preventDefault();
     }
-    return false;
+    var url = document.getElementById('reddit-url').value;
+    var parsedUrl;
+    try {
+        parsedUrl = parseUrl(url);
+    } catch (err) {
+        setError(err.message);
+        throw err;
+    }
+    setError(null);
+    saveForm();
+    createChart(parsedUrl);
 }
 
 function getAccessToken() {
