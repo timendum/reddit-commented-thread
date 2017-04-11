@@ -141,7 +141,7 @@ function createPointsData(threads, maxValues) {
         let fading = 0.9 - 1 / (Math.pow(deltaTime, 2) / 200 + 1);
         let subredditColor = subredditColors[thread.subreddit.display_name];
         if (!subredditColor) {
-            subredditColor = colors.shift;
+            subredditColor = colors.shift();
             subredditColors[thread.subreddit.display_name] = subredditColor;
             colors.push(subredditColor);
         }
