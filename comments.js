@@ -34,7 +34,7 @@ function parseUrl(url) {
     if (matches) {
         return matches[1];
     }
-    throw new TypeError('Invalid URL. Please enter the URL of a subreddit or a multireddit.');
+    throw new TypeError('Please enter the URL of a subreddit or a multireddit, ending with /.');
 }
 
 function selectPieHandler(chart, data) {
