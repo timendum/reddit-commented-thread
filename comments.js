@@ -272,7 +272,7 @@ function getAccessToken() {
     return null;
 }
 
-function onAdvancedClicked() {
+function onAdvanced() {
     var hidden = !this.checked;
     for (let elem of document.getElementsByClassName('form-advanced')) {
         elem.hidden = hidden;
@@ -313,6 +313,6 @@ document.addEventListener('DOMContentLoaded', function () {
     }
     google.charts.load('current', {'packages': ['corechart']});
     document.getElementById('main-form').addEventListener('submit', onSubmit);
-    document.getElementById('advanced-form').addEventListener('change', onAdvancedClicked);
+    document.getElementById('advanced-form').addEventListener('change', onAdvanced);
     document.getElementById('advanced-form').checked = false;
 });
