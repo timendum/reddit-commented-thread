@@ -138,7 +138,8 @@ function createPointsData(threads, maxValues) {
     let now = (new Date()).getTime() / 1000;
     for (let thread of threads) {
         let deltaTime = (now - thread.created_utc) / 60 / 60;
-        let fading = 0.9 - 1 / (Math.pow(deltaTime, 2) / 200 + 1);
+        // a value beween 1 and 0.1, to fade the point color
+        let fading = Math.max(1 - 1 / (Math.pow(deltaTime, 2) / 20 + 1), 0.1);
         let subredditColor = SUBREDDITS_COLOR[thread.subreddit.display_name];
         if (!subredditColor) {
             subredditColor = COLORS.shift();
