@@ -218,7 +218,7 @@ function getReddit(accessToken) {
     return cachedReddit;
 }
 
-function onSubmitClicked() {
+function onSubmit() {
     var url = document.getElementById('reddit-url').value;
     var parsedUrl;
     try {
@@ -308,11 +308,11 @@ document.addEventListener('DOMContentLoaded', function () {
         document.getElementById('reddit-url').value = authState;
         var authCode = new URL(window.location.href).searchParams.get('code');
         if (authCode) {
-            onSubmitClicked();
+            onSubmit();
         }
     }
     google.charts.load('current', {'packages': ['corechart']});
-    document.getElementById('submit').addEventListener('click', onSubmitClicked);
+    document.getElementById('main-form').addEventListener('submit', onSubmit);
     document.getElementById('advanced-form').addEventListener('change', onAdvancedClicked);
     document.getElementById('advanced-form').checked = false;
 });
