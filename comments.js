@@ -6,6 +6,19 @@ var USER_AGENT = 'reddit most commented thread by /u/timendum';
 var FORM_CONFIGS = [
     'reddit-url', 'pieComments', 'scatterSubmissions', 'scatterMaxX', 'scatterMaxY'
 ];
+let COLORS = [
+    [51, 102, 204],
+    [220, 57, 18],
+    [255, 153, 0],
+    [16, 150, 24],
+    [153, 0, 153],
+    [59, 62, 172],
+    [0, 153, 198],
+    [221, 68, 119],
+    [102, 170, 0],
+    [184, 46, 46],
+];
+let SUBREDDITS_COLOR = {};
 
 var cachedReddit = null;
 
@@ -122,28 +135,15 @@ function createPointsData(threads, maxValues) {
         {'type': 'string', 'role': 'tooltip'},
         {'type': 'string', 'role': 'style'}
     ]];
-    let colors = [
-        [51, 102, 204],
-        [220, 57, 18],
-        [255, 153, 0],
-        [16, 150, 24],
-        [153, 0, 153],
-        [59, 62, 172],
-        [0, 153, 198],
-        [221, 68, 119],
-        [102, 170, 0],
-        [184, 46, 46],
-    ];
-    let subredditColors = {};
     let now = (new Date()).getTime() / 1000;
     for (let thread of threads) {
         let deltaTime = (now - thread.created_utc) / 60 / 60;
         let fading = 0.9 - 1 / (Math.pow(deltaTime, 2) / 200 + 1);
-        let subredditColor = subredditColors[thread.subreddit.display_name];
+        let subredditColor = SUBREDDITS_COLOR[thread.subreddit.display_name];
         if (!subredditColor) {
-            subredditColor = colors.shift();
-            subredditColors[thread.subreddit.display_name] = subredditColor;
-            colors.push(subredditColor);
+            subredditColor = COLORS.shift();
+            SUBREDDITS_COLOR[thread.subreddit.display_name] = subredditColor;
+            COLORS.push(subredditColor);
         }
         let color = subredditColor.map(function (obj) {
             return Math.round(obj + (255 - obj) * fading).toString(16);
