@@ -142,7 +142,7 @@ function createPointsData(threads, maxValues) {
         let subredditColor = subredditColors[thread.subreddit.display_name];
         if (!subredditColor) {
             subredditColor = colors.shift;
-            subredditColors[thread.subreddit.display_name] = color;
+            subredditColors[thread.subreddit.display_name] = subredditColor;
             colors.push(subredditColor);
         }
         let color = subredditColor.map(function (obj) {
