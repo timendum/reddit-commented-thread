@@ -174,7 +174,9 @@ function plotPoints(threads) {
             'chartArea': {'width': '90%', 'height': '90%'},
             'width': 500,
             'height': 300,
-            'legend': 'none'};
+            'legend': 'none',
+            'explorer': { 'keepInBounds': true }
+        };
         var chart = new google.visualization.ScatterChart(document.getElementById('points_div'));
         chart.draw(data, options);
         google.visualization.events.addListener(chart, 'select', selectHandler(chart, threads));
