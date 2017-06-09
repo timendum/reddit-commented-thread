@@ -37,7 +37,7 @@ function getAuthRedirect() {
         clientId: REDDIT_APP_ID,
         scope: REQUIRED_SCOPES,
         redirectUri: REDIRECT_URI,
-        state: document.getElementById('reddit-url').value,
+        state: saveForm(),
         permanent: false
     });
 }
@@ -253,7 +253,7 @@ function onSubmit(evt) {
         throw err;
     }
     setError(null);
-    saveForm();
+    sessionStorage.formConfig = saveForm();
     createChart(parsedUrl);
 }
 
@@ -310,14 +310,14 @@ function saveForm() {
         let value = document.getElementById(id).value;
         config[id] = value;
     }
-    sessionStorage.formConfig = JSON.stringify(config);
+    return JSON.stringify(config);
 }
 
-function restoreForm() {
-    if (!sessionStorage.formConfig) {
+function restoreForm(formConfig) {
+    if (!formConfig) {
         return;
     }
-    var config = JSON.parse(sessionStorage.formConfig);
+    var config = JSON.parse(formConfig);
     for (let id of FORM_CONFIGS) {
         let value = config[id];
         if (value !== undefined) {
@@ -327,10 +327,10 @@ function restoreForm() {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    restoreForm();
+    restoreForm(sessionStorage.formConfig);
     var authState = new URL(window.location.href).searchParams.get('state');
     if (authState) {
-        document.getElementById('reddit-url').value = authState;
+        restoreForm(authState);
         var authCode = new URL(window.location.href).searchParams.get('code');
         if (authCode) {
             onSubmit();
