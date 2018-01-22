@@ -4,7 +4,8 @@ var REDIRECT_URI = 'https://timendum.github.io/reddit-commented-thread/';
 var REQUIRED_SCOPES = ['read', 'identity'];
 var USER_AGENT = 'reddit most commented thread by /u/timendum';
 var FORM_CONFIGS = [
-    'reddit-url', 'pieComments', 'scatterSubmissions', 'scatterMaxX', 'scatterMaxY'
+    'reddit-url', 'pieComments', 'scatterSubmissions',
+    'scatterMaxX', 'scatterMaxY', 'filter-multireddit'
 ];
 let COLORS = [
     [51, 102, 204],
@@ -128,6 +129,35 @@ function selectHandler(chart, threads) {
     };
 }
 
+function filterThreadsData(threads) {
+    let distance = {};
+    // init subreddits
+    for (let thread of threads) {
+        distance[thread.subreddit_id] = [];
+    }
+    if (Object.keys(distance).length === 1) {
+        return threads;
+    }
+    // calculate real distance
+    for (let thread of threads) {
+        distance[thread.subreddit_id].push(Math.pow(thread.score, 2) +
+                                           Math.pow(thread.num_comments, 2));
+    }
+    let dlimit = {};
+    for (let subreddit_id of Object.keys(distance)) {
+        let values = distance[subreddit_id];
+        dlimit[subreddit_id] = values.sort((a, b) => a - b)[Math.floor(values.length / 2)] * 0.75;
+    }
+    let fthreads = [];
+    for (let thread of threads) {
+        if (dlimit[thread.subreddit_id] < Math.pow(thread.score, 2) +
+                                          Math.pow(thread.num_comments, 2)) {
+            fthreads.push(thread);
+        }
+    }
+    return fthreads;
+}
+
 function createPointsData(threads, maxValues) {
     let chartData = [[
         'Score',
@@ -136,6 +166,9 @@ function createPointsData(threads, maxValues) {
         {'type': 'string', 'role': 'style'}
     ]];
     let now = (new Date()).getTime() / 1000;
+    if (document.getElementById('advanced-form').checked) {
+        threads = filterThreadsData(threads);
+    }
     for (let thread of threads) {
         let deltaTime = (now - thread.created_utc) / 60 / 60;
         // a value beween 1 and 0.2, to fade the point color
