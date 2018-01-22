@@ -166,9 +166,6 @@ function createPointsData(threads, maxValues) {
         {'type': 'string', 'role': 'style'}
     ]];
     let now = (new Date()).getTime() / 1000;
-    if (document.getElementById('advanced-form').checked) {
-        threads = filterThreadsData(threads);
-    }
     for (let thread of threads) {
         let deltaTime = (now - thread.created_utc) / 60 / 60;
         // a value beween 1 and 0.2, to fade the point color
@@ -198,6 +195,9 @@ function plotPoints(threads) {
     maxX = parseInt(maxX, 10);
     var maxY = document.getElementById('scatterMaxY').value;
     maxY = parseInt(maxY, 10);
+    if (document.getElementById('advanced-form').checked) {
+        threads = filterThreadsData(threads);
+    }
     google.charts.setOnLoadCallback(function () {
         var chartData = createPointsData(threads, [maxX || Infinity, maxY || Infinity]);
         var data = google.visualization.arrayToDataTable(chartData);
