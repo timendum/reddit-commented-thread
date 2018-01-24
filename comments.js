@@ -177,7 +177,7 @@ function createPointsData(threads, maxValues) {
             COLORS.push(subredditColor);
         }
         let color = subredditColor.map(function (obj) {
-            return Math.round(obj + (255 - obj) * fading).toString(16);
+            return Math.round(obj + (255 - obj) * fading).toString(16).padStart(2, '0');
         }).join('');
         chartData.push([
             Math.min(thread.score, maxValues[0]),
