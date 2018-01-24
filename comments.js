@@ -340,8 +340,11 @@ function onAdvanced() {
 function saveForm() {
     var config = {};
     for (let id of FORM_CONFIGS) {
-        let value = document.getElementById(id).value;
-        config[id] = value;
+        if (document.getElementById(id).type === "checkbox") {
+            config[id] = document.getElementById(id).checked;
+        } else {
+            config[id] = document.getElementById(id).value;
+        }
     }
     return JSON.stringify(config);
 }
@@ -354,7 +357,11 @@ function restoreForm(formConfig) {
     for (let id of FORM_CONFIGS) {
         let value = config[id];
         if (value !== undefined) {
-            document.getElementById(id).value = value;
+            if (document.getElementById(id).type === "checkbox") {
+                document.getElementById(id).checked = value;
+            } else {
+                document.getElementById(id).value = value;
+            }
         }
     }
 }
