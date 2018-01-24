@@ -195,7 +195,7 @@ function plotPoints(threads) {
     maxX = parseInt(maxX, 10);
     var maxY = document.getElementById('scatterMaxY').value;
     maxY = parseInt(maxY, 10);
-    if (document.getElementById('advanced-form').checked) {
+    if (document.getElementById('filter-multireddit').checked) {
         threads = filterThreadsData(threads);
     }
     google.charts.setOnLoadCallback(function () {
