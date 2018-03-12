@@ -57,7 +57,7 @@ function selectPieHandler(chart, data) {
         chart.setSelection(null);
         var subreddit = data.getValue(selection[0].row, 3);
         var id = data.getValue(selection[0].row, 2).replace(/^t3_/, '');
-        var url = `https://www.reddit.com/r/${subreddit}/comments/${id}//`;
+        var url = `https://www.reddit.com/r/${subreddit}/comments/${id}/_/`;
         window.open(url, id);
     };
 }
