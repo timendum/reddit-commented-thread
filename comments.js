@@ -199,9 +199,6 @@ function plotPoints(threads) {
         threads = filterThreadsData(threads);
     }
     google.charts.setOnLoadCallback(function () {
-        var chartData = createPointsData(threads, [maxX || Infinity, maxY || Infinity]);
-        var data = google.visualization.arrayToDataTable(chartData);
-
         var options = {
             'colors': ['#3366cc'],
             'chartArea': {'width': '90%', 'height': '90%'},
@@ -210,6 +207,14 @@ function plotPoints(threads) {
             'legend': 'none',
             'explorer': { 'keepInBounds': true }
         };
+        if (document.getElementById('logaritmic').value === 'on') {
+            maxX = Infinity;
+            maxY = Infinity;
+            options['vAxis'] = { 'logScale': true };
+            options['hAxis'] = { 'logScale': true };
+        }
+        var chartData = createPointsData(threads, [maxX || Infinity, maxY || Infinity]);
+        var data = google.visualization.arrayToDataTable(chartData);
         var chart = new google.visualization.ScatterChart(document.getElementById('points_div'));
         chart.draw(data, options);
         google.visualization.events.addListener(chart, 'select', selectHandler(chart, threads));
