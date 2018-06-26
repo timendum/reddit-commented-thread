@@ -5,7 +5,7 @@ var REQUIRED_SCOPES = ['read', 'identity'];
 var USER_AGENT = 'reddit most commented thread by /u/timendum';
 var FORM_CONFIGS = [
     'reddit-url', 'pieComments', 'scatterSubmissions',
-    'scatterMaxX', 'scatterMaxY', 'filter-multireddit'
+    'scatterMaxX', 'scatterMaxY', 'filter-multireddit', 'logaritmic'
 ];
 let COLORS = [
     [51, 102, 204],
