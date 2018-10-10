@@ -51,15 +51,13 @@ function parseUrl(url) {
     throw new TypeError('Please enter the URL of a subreddit or a multireddit, ending with /.');
 }
 
-function selectPieHandler(chart, data) {
-    return function (a) {
-        var selection = chart.getSelection();
-        chart.setSelection(null);
-        var subreddit = data.getValue(selection[0].row, 3);
-        var id = data.getValue(selection[0].row, 2).replace(/^t3_/, '');
+function selectPieHandler(e) {
+    if (e.point.subreddit && e.point.linkId) {
+        var subreddit = e.point.subreddit;
+        var id = e.point.linkId.replace(/^t3_/, '');
         var url = `https://www.reddit.com/r/${subreddit}/comments/${id}/_/`;
         window.open(url, id);
-    };
+    }
 }
 
 function createPieDataTimeDependant(comments) {
@@ -132,6 +130,9 @@ function plotPie(comments) {
             },
             plotOptions: {
                 pie: {
+                    events: {
+                        click: selectPieHandler
+                    },
                     cursor: 'pointer',
                     dataLabels: {
                         enabled: true,
