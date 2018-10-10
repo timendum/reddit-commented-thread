@@ -1,4 +1,4 @@
-/* global snoowrap, google */
+/* global snoowrap, Highcharts */
 var REDDIT_APP_ID = 'R7NdC-SvRV45Uw';
 var REDIRECT_URI = 'https://timendum.github.io/reddit-commented-thread/';
 var REQUIRED_SCOPES = ['read', 'identity'];
@@ -63,58 +63,95 @@ function selectPieHandler(chart, data) {
 }
 
 function createPieDataTimeDependant(comments) {
-    var chartData = [[
-        'Thread',
-        'Score',
-        'Link Id',
-        'Subreddit',
-        'Comments']];
+    var chartData = [];
     var now = (new Date()).getTime() / 1000;
     for (var comment of comments) {
         var updated = false;
         var deltaTime = (now - comment.created_utc) / 60 / 60;
         var value = 1 / (Math.pow(deltaTime, 2) / 5 + 1);
         for (var cd of chartData) {
-            if (cd[2] === comment.link_id) {
-                cd[1] += value;
-                cd[4] += 1;
+            if (cd.name === comment.link_title) {
+                cd.y += value;
+                cd.numComments += 1;
                 updated = true;
                 break;
             }
         }
         if (!updated) {
-            chartData.push([
-                comment.link_title,
-                value,
-                comment.link_id,
-                comment.subreddit.display_name,
-                1
-            ]);
+            chartData.push({
+                name: comment.link_title,
+                y: value,
+                numComments: 1,
+                subreddit: comment.subreddit.display_name,
+                linkId: comment.link_id
+            });
         }
     }
+    chartData.sort(function (a, b) {
+        return b.y - a.y;
+    });
+    window.pieData = chartData;
+    return addCustomLabelPieData(chartData);
+}
+
+function addCustomLabelPieData(chartData) {
+    function sumReduce(accumulator, currentValue) {
+        return accumulator + currentValue;
+    }
+    const total = chartData.map(el => el.y).reduce(sumReduce);
+    const tooSmallIndex = chartData.findIndex(function (element) {
+        return element.y < total * 0.02;
+    });
+    let smallElems = chartData.splice(tooSmallIndex);
+    chartData.push({
+        name: 'Others',
+        y: smallElems.map(el => el.y).reduce(sumReduce),
+        numComments: smallElems.map(el => el.numComments).reduce(sumReduce),
+        subreddit: null,
+        linkId: null
+    });
+    chartData.forEach(function (elem, index) {
+        if (elem.y < total * 0.03) {
+            elem.dataLabels = {enabled: false};
+        }
+    });
     return chartData;
 }
 
 function plotPie(comments) {
-    google.charts.setOnLoadCallback(function () {
-        try {
-            var chartData = createPieDataTimeDependant(comments);
-            var data = google.visualization.arrayToDataTable(chartData);
-            data.sort({column: 1, desc: true});
-            var options = {'pieHole': 0.4,
-                'sliceVisibilityThreshold': 0.02,
-                'chartArea': {'width': '90%', 'height': '90%'},
-                'width': 400,
-                'height': 400,
-                'legend': 'none'};
-            var chart = new google.visualization.PieChart(document.getElementById('pie_div'));
-            chart.draw(data, options);
-            google.visualization.events.addListener(chart, 'select', selectPieHandler(chart, data));
-        } catch (e) {
-            console.log(e);
-            setError('Error during the creation of the pie chart');
-        }
-    });
+    try {
+        Highcharts.chart('pie_div', {
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false,
+                type: 'pie'
+            },
+            title: {
+                text: 'Topic hotness by comment number'
+            },
+            plotOptions: {
+                pie: {
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: true,
+                        distance: -50,
+                        format: '{percentage:.1f}%',
+                        style: {
+                            fontWeight: 'normal'
+                        }
+                    }
+                }
+            },
+            tooltip: {
+                pointFormat: 'Comments: {point.numComments} ({point.percentage:.1f}%)</b>'
+            },
+            series: [{data: createPieDataTimeDependant(comments)}]
+        });
+    } catch (e) {
+        console.log(e);
+        setError('Error during the creation of the pie chart');
+    }
 }
 
 function selectHandler(chart, threads) {
@@ -198,27 +235,21 @@ function plotPoints(threads) {
     if (document.getElementById('filter-multireddit').checked) {
         threads = filterThreadsData(threads);
     }
-    google.charts.setOnLoadCallback(function () {
-        var options = {
-            'colors': ['#3366cc'],
-            'chartArea': {'width': '90%', 'height': '90%'},
-            'width': 500,
-            'height': 300,
-            'legend': 'none',
-            'explorer': { 'keepInBounds': true }
-        };
-        if (document.getElementById('logaritmic').value === 'on') {
-            maxX = Infinity;
-            maxY = Infinity;
-            options['vAxis'] = { 'logScale': true };
-            options['hAxis'] = { 'logScale': true };
-        }
-        var chartData = createPointsData(threads, [maxX || Infinity, maxY || Infinity]);
-        var data = google.visualization.arrayToDataTable(chartData);
-        var chart = new google.visualization.ScatterChart(document.getElementById('points_div'));
-        chart.draw(data, options);
-        google.visualization.events.addListener(chart, 'select', selectHandler(chart, threads));
-    });
+    var options = {
+        'colors': ['#3366cc'],
+        'chartArea': {'width': '90%', 'height': '90%'},
+        'width': 500,
+        'height': 300,
+        'legend': 'none',
+        'explorer': { 'keepInBounds': true }
+    };
+    if (document.getElementById('logaritmic').value === 'on') {
+        maxX = Infinity;
+        maxY = Infinity;
+        options['vAxis'] = { 'logScale': true };
+        options['hAxis'] = { 'logScale': true };
+    }
+    var chartData = createPointsData(threads, [maxX || Infinity, maxY || Infinity]);
 }
 
 function createChart(url) {
@@ -241,30 +272,32 @@ function createChart(url) {
             sessionStorage.removeItem('accessToken');
             sessionStorage.removeItem('accessTokenDate');
             /* eslint-disable no-native-reassign */
-            location = getAuthRedirect();
+            //location = getAuthRedirect();
             return null;
         }).then(function () {
             // get cached istance
             return getReddit(null);
-        }).then(function (reddit) {
-            return reddit._getListing({uri: url + '/new', qs: {limit: scatterLimit}});
-        }).catch(function (e) {
-            console.log(e);
-            setError('Error reading data from Reddit.');
-            sessionStorage.removeItem('accessToken');
-            sessionStorage.removeItem('accessTokenDate');
-            /* eslint-disable no-native-reassign */
-            location = getAuthRedirect();
-            return null;
-        }).then(
-            plotPoints
-        ).catch(console.log).then(function () {
+        })
+        // .then(function (reddit) {
+        //     return reddit._getListing({uri: url + '/new', qs: {limit: scatterLimit}});
+        // }).catch(function (e) {
+        //     console.log(e);
+        //     setError('Error reading data from Reddit.');
+        //     sessionStorage.removeItem('accessToken');
+        //     sessionStorage.removeItem('accessTokenDate');
+        //     /* eslint-disable no-native-reassign */
+        //     location = getAuthRedirect();
+        //     return null;
+        // }).then(
+        //     plotPoints
+        // ).catch(console.log)
+        .then(function () {
             button.removeAttribute('disabled');
             button.textContent = button.dataset.originalText;
         });
     } else {
         /* eslint-disable no-native-reassign */
-        location = getAuthRedirect();
+        //location = getAuthRedirect();
     }
     return false;
 }
@@ -381,7 +414,6 @@ document.addEventListener('DOMContentLoaded', function () {
             onSubmit();
         }
     }
-    google.charts.load('current', {'packages': ['corechart']});
     document.getElementById('main-form').addEventListener('submit', onSubmit);
     document.getElementById('advanced-form').addEventListener('change', onAdvanced);
     document.getElementById('advanced-form').checked = false;
