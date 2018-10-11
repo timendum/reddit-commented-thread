@@ -21,7 +21,37 @@ let COLORS = [
 ];
 let SUBREDDITS_COLOR = {};
 
+function arrayToColor(color, fading) {
+    return '#' + color.map(function (obj) {
+        return Math.round(obj + (255 - obj) * fading).toString(16).toUpperCase().padStart(2, '0');
+    }).join('');
+}
+
 var cachedReddit = null;
+
+(function (H) {
+    // Pass error messages
+    H.Axis.prototype.allowNegativeLog = true;
+    H.Axis.prototype.log2lin = function (num) {
+        var isNegative = num < 0,
+            adjustedNum = Math.abs(num),
+            result;
+        if (adjustedNum < 2) {
+            adjustedNum += (2 - adjustedNum) / 2;
+        }
+        result = Math.log(adjustedNum) / Math.LN10;
+        return isNegative ? -result : result;
+    };
+    H.Axis.prototype.lin2log = function (num) {
+        var isNegative = num < 0,
+            absNum = Math.abs(num),
+            result = Math.pow(10, absNum);
+        if (result < 2) {
+            result = (2 * (result - 1)) / (2 - 1);
+        }
+        return isNegative ? -result : result;
+    };
+}(Highcharts));
 
 function setError(message) {
     var div = document.getElementById('url-error-message');
@@ -147,7 +177,8 @@ function plotPie(comments) {
             tooltip: {
                 pointFormat: 'Comments: {point.numComments} ({point.percentage:.1f}%)</b>'
             },
-            series: [{data: createPieDataTimeDependant(comments)}]
+            series: [{data: createPieDataTimeDependant(comments)}],
+            credits: false
         });
     } catch (e) {
         console.log(e);
@@ -155,16 +186,14 @@ function plotPie(comments) {
     }
 }
 
-function selectHandler(chart, threads) {
-    return function (a) {
-        var selection = chart.getSelection();
-        chart.setSelection(null);
-        let thread = threads[selection[0].row];
-        let permalink = thread.permalink;
-        let id = thread.id;
-        var url = `https://www.reddit.com${permalink}`;
+function selectHandler(e) {
+    console.log(e);
+    if (e.point.threadId && e.point.permalink) {
+        const id = e.point.threadId;
+        const permalink = e.point.permalink;
+        const url = `https://www.reddit.com${permalink}`;
         window.open(url, id);
-    };
+    }
 }
 
 function filterThreadsData(threads) {
@@ -182,9 +211,9 @@ function filterThreadsData(threads) {
                                            Math.pow(thread.num_comments, 2));
     }
     let dlimit = {};
-    for (let subreddit_id of Object.keys(distance)) {
-        let values = distance[subreddit_id];
-        dlimit[subreddit_id] = values.sort((a, b) => a - b)[Math.floor(values.length / 2)] * 0.75;
+    for (let subredditId of Object.keys(distance)) {
+        let values = distance[subredditId];
+        dlimit[subredditId] = values.sort((a, b) => a - b)[Math.floor(values.length / 2)] * 0.75;
     }
     let fthreads = [];
     for (let thread of threads) {
@@ -197,34 +226,35 @@ function filterThreadsData(threads) {
 }
 
 function createPointsData(threads, maxValues) {
-    let chartData = [[
-        'Score',
-        'Comments',
-        {'type': 'string', 'role': 'tooltip'},
-        {'type': 'string', 'role': 'style'}
-    ]];
+    let chartData = {};
     let now = (new Date()).getTime() / 1000;
     for (let thread of threads) {
+        const subreddit = thread.subreddit.display_name;
         let deltaTime = (now - thread.created_utc) / 60 / 60;
         // a value beween 1 and 0.2, to fade the point color
-        let fading = Math.max(1 - 1 / (Math.pow(deltaTime, 2) / 100 + 1), 0.2);
-        let subredditColor = SUBREDDITS_COLOR[thread.subreddit.display_name];
+        let fading = Math.max(1 - 1 / (Math.pow(deltaTime, 2) / 100 + 1), 0.3);
+        let subredditColor = SUBREDDITS_COLOR[subreddit];
         if (!subredditColor) {
             subredditColor = COLORS.shift();
-            SUBREDDITS_COLOR[thread.subreddit.display_name] = subredditColor;
+            SUBREDDITS_COLOR[subreddit] = subredditColor;
             COLORS.push(subredditColor);
         }
-        let color = subredditColor.map(function (obj) {
-            return Math.round(obj + (255 - obj) * fading).toString(16).padStart(2, '0');
-        }).join('');
-        chartData.push([
-            Math.min(thread.score, maxValues[0]),
-            Math.min(thread.num_comments, maxValues[1]),
-            `${thread.title}\n (Score: ${thread.score} - Comments: ${thread.num_comments})`,
-            `point {fill-color: #${color}}`
-        ]);
+        let color = arrayToColor(subredditColor, fading);
+        chartData[subreddit] = chartData[subreddit] || [];
+        chartData[subreddit] .push({
+            x: Math.min(thread.score, maxValues[0]),
+            y: Math.min(thread.num_comments, maxValues[1]),
+            name: thread.title,
+            score: thread.score,
+            threadId: thread.id,
+            permalink: thread.permalink,
+            numComments: thread.num_comments,
+            color: color
+        });
     }
-    return chartData;
+    return Object.keys(chartData).map(function (key) {
+        return {name: key, data: chartData[key], color: arrayToColor(SUBREDDITS_COLOR[key], 0)};
+    });
 }
 
 function plotPoints(threads) {
@@ -236,21 +266,55 @@ function plotPoints(threads) {
     if (document.getElementById('filter-multireddit').checked) {
         threads = filterThreadsData(threads);
     }
-    var options = {
-        'colors': ['#3366cc'],
-        'chartArea': {'width': '90%', 'height': '90%'},
-        'width': 500,
-        'height': 300,
-        'legend': 'none',
-        'explorer': { 'keepInBounds': true }
-    };
+    let axisType = "linear";
     if (document.getElementById('logaritmic').value === 'on') {
-        maxX = Infinity;
-        maxY = Infinity;
-        options['vAxis'] = { 'logScale': true };
-        options['hAxis'] = { 'logScale': true };
+        axisType = "logarithmic";
     }
     var chartData = createPointsData(threads, [maxX || Infinity, maxY || Infinity]);
+    Highcharts.chart('points_div', {
+        chart: {
+            type: 'scatter',
+            zoomType: 'xy'
+        },
+        title: {
+            text: ''
+        },
+        xAxis: {
+            title: {
+                enabled: true,
+                text: 'Score'
+            },
+            type: axisType,
+            minRange: 0,
+            endOnTick: true,
+            showLastLabel: true
+        },
+        yAxis: {
+            title: {
+                enabled: true,
+                text: 'Comments'
+            },
+            type: axisType,
+            minRange: 0,
+            startOnTick: true,
+            endOnTick: true,
+            showLastLabel: true
+        },
+        plotOptions: {
+            scatter: {
+                events: {
+                    click: selectHandler
+                },
+                cursor: 'pointer',
+                tooltip: {
+                    pointFormat: '<strong>{point.name}</strong><br/>' +
+                                 'Score {point.x} - Comments: {point.y}'
+                }
+            }
+        },
+        series: chartData,
+        credits: false
+    });
 }
 
 function createChart(url) {
@@ -273,32 +337,32 @@ function createChart(url) {
             sessionStorage.removeItem('accessToken');
             sessionStorage.removeItem('accessTokenDate');
             /* eslint-disable no-native-reassign */
-            //location = getAuthRedirect();
+            location = getAuthRedirect();
             return null;
         }).then(function () {
             // get cached istance
             return getReddit(null);
         })
-        // .then(function (reddit) {
-        //     return reddit._getListing({uri: url + '/new', qs: {limit: scatterLimit}});
-        // }).catch(function (e) {
-        //     console.log(e);
-        //     setError('Error reading data from Reddit.');
-        //     sessionStorage.removeItem('accessToken');
-        //     sessionStorage.removeItem('accessTokenDate');
-        //     /* eslint-disable no-native-reassign */
-        //     location = getAuthRedirect();
-        //     return null;
-        // }).then(
-        //     plotPoints
-        // ).catch(console.log)
+        .then(function (reddit) {
+            return reddit._getListing({uri: url + '/new', qs: {limit: scatterLimit}});
+        }).catch(function (e) {
+            console.log(e);
+            setError('Error reading data from Reddit.');
+            sessionStorage.removeItem('accessToken');
+            sessionStorage.removeItem('accessTokenDate');
+            /* eslint-disable no-native-reassign */
+            location = getAuthRedirect();
+            return null;
+        }).then(
+            plotPoints
+        ).catch(console.log)
         .then(function () {
             button.removeAttribute('disabled');
             button.textContent = button.dataset.originalText;
         });
     } else {
         /* eslint-disable no-native-reassign */
-        //location = getAuthRedirect();
+        location = getAuthRedirect();
     }
     return false;
 }
