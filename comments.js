@@ -133,6 +133,7 @@ function addCustomLabelPieData(chartData) {
     let smallElems = chartData.splice(tooSmallIndex);
     chartData.push({
         name: 'Others',
+        color: '#B5B5B5',
         y: smallElems.map(el => el.y).reduce(sumReduce),
         numComments: smallElems.map(el => el.numComments).reduce(sumReduce),
         subreddit: null,
