@@ -87,6 +87,9 @@ function selectPieHandler(e) {
         var id = e.point.linkId.replace(/^t3_/, '');
         var url = `https://www.reddit.com/r/${subreddit}/comments/${id}/_/`;
         window.open(url, id);
+    } else {
+        var url = document.getElementById('reddit-url').value;
+        window.open(url, url);
     }
 }
 
