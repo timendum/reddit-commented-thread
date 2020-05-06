@@ -229,7 +229,7 @@ function filterThreadsData(threads) {
     return fthreads;
 }
 
-function createPointsData(threads, maxValues) {
+function createPointsData(threads, maxValues, minValues) {
     let chartData = {};
     let now = (new Date()).getTime() / 1000;
     for (let thread of threads) {
@@ -246,8 +246,8 @@ function createPointsData(threads, maxValues) {
         let color = arrayToColor(subredditColor, fading);
         chartData[subreddit] = chartData[subreddit] || [];
         chartData[subreddit] .push({
-            x: Math.min(thread.score, maxValues[0]),
-            y: Math.min(thread.num_comments, maxValues[1]),
+            x: Math.max(Math.min(thread.score, maxValues[0]), minValues[0]),
+            y: Math.max(Math.min(thread.num_comments, maxValues[1]), minValues[1]),
             name: thread.title,
             score: thread.score,
             threadId: thread.id,
@@ -271,10 +271,12 @@ function plotPoints(threads) {
         threads = filterThreadsData(threads);
     }
     let axisType = "linear";
-    if (document.getElementById('logaritmic').value === 'on') {
+	let minValues = [-Infinity, -Infinity];
+    if (document.getElementById('logaritmic').checked) {
         axisType = "logarithmic";
+		minValues = [1, 1];
     }
-    var chartData = createPointsData(threads, [maxX || Infinity, maxY || Infinity]);
+    var chartData = createPointsData(threads, [maxX || Infinity, maxY || Infinity], minValues);
     Highcharts.chart('points_div', {
         chart: {
             type: 'scatter',
