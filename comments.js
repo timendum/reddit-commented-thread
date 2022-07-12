@@ -236,10 +236,11 @@ function createPointsData(threads, maxValues, minValues) {
         const subreddit = thread.subreddit.display_name;
         let deltaTime = (now - thread.created_utc) / 60 / 60;
         // a value beween 1 and 0.3, to fade the point color
+	let fading = 0;
 	if (document.getElementById('logaritmic').checked) {
-		const fading = Math.max(1 - 1 / (Math.pow(deltaTime, 2) / 100 + 1), 0.3);
+		fading = Math.max(1 - 1 / (Math.pow(deltaTime, 2) / 100 + 1), 0.3);
 	} else {
-		const fading = Math.max(1 - 1 / (deltaTime / 10 + 1), 0.3);
+		fading = Math.max(1 - 1 / (deltaTime / 10 + 1), 0.3);
 	}
         let subredditColor = SUBREDDITS_COLOR[subreddit];
         if (!subredditColor) {
