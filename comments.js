@@ -154,6 +154,9 @@ function plotPie(comments) {
     try {
         Highcharts.chart('pie_div', {
             chart: {
+                style: {
+                    fontSize: '100%'
+                },
                 plotBackgroundColor: null,
                 plotBorderWidth: null,
                 plotShadow: false,
@@ -283,7 +286,10 @@ function plotPoints(threads) {
     }
     var chartData = createPointsData(threads, [maxX || Infinity, maxY || Infinity], minValues);
     Highcharts.chart('points_div', {
-        chart: {
+	chart: {
+	    style: {
+	        fontSize: '100%'
+	    },
             type: 'scatter',
             zoomType: 'xy'
         },
