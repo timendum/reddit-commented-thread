@@ -155,7 +155,7 @@ function plotPie(comments) {
         Highcharts.chart('pie_div', {
             chart: {
                 style: {
-                    fontSize: '100%'
+                    fontSize: '110%'
                 },
                 plotBackgroundColor: null,
                 plotBorderWidth: null,
