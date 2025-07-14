@@ -151,6 +151,10 @@ function addCustomLabelPieData(chartData) {
 }
 
 function plotPie(comments) {
+    let pointFormat = 'Comments: {point.numComments} ({point.percentage:.1f}%)</b>';
+    if (new Set(comments.map(c => c.subreddit_id)).size > 1) {
+        pointFormat = 'Comments: {point.numComments} ({point.percentage:.1f}%)</b> on r/{point.subreddit}';
+    }
     try {
         Highcharts.chart('pie_div', {
             chart: {
@@ -182,7 +186,7 @@ function plotPie(comments) {
                 }
             },
             tooltip: {
-                pointFormat: 'Comments: {point.numComments} ({point.percentage:.1f}%)</b>'
+                pointFormat: pointFormat
             },
             series: [{data: createPieDataTimeDependant(comments)}],
             credits: false
